@@ -2,7 +2,6 @@ package nl.uu.mal;
 
 import java.awt.Color;
 import java.util.Iterator;
-import java.util.List;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -12,6 +11,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
 
@@ -27,9 +27,9 @@ public class LineChart extends ApplicationFrame {
      * @param title
      * 			the frame title.
      */
-    public LineChart(final String title, List<Skater> skaters) {
+    public LineChart(final String title, SkatingRink skatingRink) {
         super(title);
-        final XYDataset dataset = createDatasetFromSkaters(skaters);
+        final XYDataset dataset = createDatasetFromSkatingRink(skatingRink);
         final JFreeChart chart = createChart(title, dataset);
         final ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new java.awt.Dimension(1200, 600));
@@ -37,16 +37,15 @@ public class LineChart extends ApplicationFrame {
     }
 
     /**
-     * Creates a dataset from the list of skaters.
+     * Creates a dataset from the list of skating rink.
      *
      * @return the dataset based on the list of skaters.
      */
-    private XYDataset createDatasetFromSkaters(List<Skater> skaters) {
+    private XYDataset createDatasetFromSkatingRink(SkatingRink skatingRink) {
         final XYSeriesCollection dataset = new XYSeriesCollection();
-        Iterator<Skater> iterator = skaters.iterator();
+        Iterator<XYSeries> iterator = skatingRink.getPlots().values().iterator();
         while (iterator.hasNext()) {
-        	Skater skater = iterator.next();
-        	dataset.addSeries(skater.getSeries());
+        	dataset.addSeries(iterator.next());
         }
         return dataset;
 
@@ -86,7 +85,7 @@ public class LineChart extends ApplicationFrame {
 
         final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesLinesVisible(0, true);
-        renderer.setSeriesShapesVisible(1, true);
+        renderer.setSeriesShapesVisible(1, false);
         plot.setRenderer(renderer);
 
         // change the auto tick unit selection to integer units only...
