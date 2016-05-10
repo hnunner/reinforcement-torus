@@ -23,7 +23,6 @@ public class Simulation {
 			Skater skater = new Skater(skatingRink);
 			skatingRink.addSkater(skater);
 		}
-		skatingRink.initPlots();
 
 		// simulate skating rounds
 		skatingRink.letThemSkate();

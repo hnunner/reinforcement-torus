@@ -10,7 +10,7 @@ public final class Properties {
 	// player/action/behavior
 	public static final int ACTION_COUNT = 6;
 	public static final int STD_DISTANCE = 1;
-	public static final double EPSILONE_GREEDY = 0.90;
+	public static final double EPSILON_GREEDY = 0.90;
 
 	// gameplay/layout
 	public static final int PLAYER_COUNT = 3;

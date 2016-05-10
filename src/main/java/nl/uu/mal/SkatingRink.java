@@ -30,6 +30,7 @@ public class SkatingRink {
 		this.width = width;
 		this.height = height;
 		this.skaters = new ArrayList<Skater>();
+		this.initPlots();
 	}
 	// getter
 	public static SkatingRink getInstance() {
@@ -43,10 +44,10 @@ public class SkatingRink {
 	 * @param actions
 	 * 			the actions the plots are based on
 	 */
-	public void initPlots() {
+	private void initPlots() {
 		this.plots = new HashMap<Integer, XYSeries>();
 
-		Iterator<Action> actionsIt = this.skaters.get(0).getAvailableActions().iterator();
+		Iterator<Action> actionsIt = Action.createAvailableActions().iterator();
 		while (actionsIt.hasNext()) {
 			Action action = actionsIt.next();
 			this.plots.put(action.getAngle(), new XYSeries(String.valueOf(action.getAngle())));
@@ -110,7 +111,7 @@ public class SkatingRink {
 				double meanPayoffPerAngle = 0;
 				while (skatersIt.hasNext()) {
 					Skater skater = skatersIt.next();
-					meanPayoffPerAngle += skater.getMeanPayoff(angle);
+					meanPayoffPerAngle += skater.getMeanPayoffForAngle(angle);
 				}
 				meanPayoffPerAngle = Double.valueOf(meanPayoffPerAngle) / Double.valueOf(Properties.PLAYER_COUNT);
 				xySeries.add(i, meanPayoffPerAngle);
@@ -121,7 +122,7 @@ public class SkatingRink {
 	}
 
 
-	public Position getNextPosition(Position position, Action action) {
+	public Position getNewPosition(Position position, Action action) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("\taction: " + action.getAngle() + ", " + action.getDistance() + "\n");
 		// new x-coordinate
@@ -160,13 +161,6 @@ public class SkatingRink {
 	 */
 	public List<Skater> getSkaters() {
 		return skaters;
-	}
-
-	/**
-	 * @param skaters the skaters to set
-	 */
-	public void setSkaters(List<Skater> skaters) {
-		this.skaters = skaters;
 	}
 
 	public void addSkater(Skater skater) {
