@@ -10,6 +10,8 @@ public final class Properties {
 	// player/action/behavior
 	public static final int ACTION_COUNT = 6;
 	public static final int STD_DISTANCE = 1;
+	public static final int DISTANCE_FRAGMENTATION = 10;
+	public static final double DISTANCE_INCREMENT = Double.valueOf(STD_DISTANCE) / Double.valueOf(DISTANCE_FRAGMENTATION);
 	public static final double EPSILON_GREEDY = 0.90;
 
 	// gameplay/layout

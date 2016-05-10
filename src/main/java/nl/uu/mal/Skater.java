@@ -85,10 +85,19 @@ public class Skater {
 		Iterator<Action> actionsIt = orderedActions.iterator();
 		while (actionsIt.hasNext() && !foundNextPosition) {
 			prospectiveAction = actionsIt.next();
+			int prospectiveAngle = prospectiveAction.getAngle();
+			int prospectiveDistance = prospectiveAction.getDistance();
 
-			// determine prospective non-collisional position based on current position, action and skate rink
-			prospectivePosition = skatingRink.getNewPosition(position, prospectiveAction);
-			foundNextPosition = !isColliding(prospectivePosition, otherSkaters);
+			// determine prospective non-collisional position along the wole way of movement, based on
+			// current position, the prospective angle, the prospective distance and the skating rink
+			double stepWidth = Properties.DISTANCE_INCREMENT;
+			boolean isColliding = false;
+			while (stepWidth <= prospectiveDistance && !isColliding) {
+				prospectivePosition = skatingRink.getNewPosition(position, prospectiveAngle, stepWidth);
+				isColliding = isColliding(prospectivePosition, otherSkaters);
+				stepWidth += Properties.DISTANCE_INCREMENT;
+			}
+			foundNextPosition = !isColliding;
 
 			// give low reward in case action lead to collision
 			if (!foundNextPosition) {

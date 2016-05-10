@@ -120,20 +120,23 @@ public class SkatingRink {
 
 
 	/**
-	 * Calculates new position within the skating rink, based on a current position and an action. The calculation is
-	 * based on the shape and layout of the skating rink. In this case it is a simple torus constructed out of a
-	 * rectangular, two-dimensional shape.
+	 * Calculates new position within the skating rink, based on a current position, the angle of movement and the distance.
+	 * The calculation is based on the shape and layout of the skating rink. In this case it is a simple torus constructed
+	 * out of a rectangular, two-dimensional shape.
 	 *
 	 * @param currentPosition
 	 * 			the skater's current position
-	 * @param action
-	 * 			the intended action
+	 * @param angle
+	 * 			the angle of movement
+	 * @param distance
+	 * 			the distance of movement
 	 * @return the new position of the skater
 	 */
-	public Position getNewPosition(Position currentPosition, Action action) {
+	public Position getNewPosition(Position currentPosition, int angle, double distance) {
+		double radAngle = Math.toRadians(angle);
 
 		// new x-coordinate
-		double newX = (Math.cos(Math.toRadians(action.getAngle())) * action.getDistance()) + currentPosition.getX();
+		double newX = (Math.cos(radAngle) * distance) + currentPosition.getX();
 		// wrap around, if skater skates out of bounds
 		if (newX >= this.width) {
 			newX = newX - this.width;
@@ -143,7 +146,7 @@ public class SkatingRink {
 		}
 
 		// new y-coordinate
-		double newY = Math.sin(Math.toRadians(action.getAngle())) * action.getDistance() + currentPosition.getY();
+		double newY = Math.sin(radAngle) * distance + currentPosition.getY();
 		// wrap around, if skater skates out of bounds
 		if (newY >= this.height) {
 			newY = newY - this.height;
