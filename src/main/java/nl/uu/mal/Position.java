@@ -1,13 +1,19 @@
 package nl.uu.mal;
 
+/**
+ * Simple bean representing a position within a two-dimensional coordinate system.
+ *
+ * @author h.nunner
+ */
 public class Position {
 
+	// coordinates
 	private double x;
 	private double y;
 
 
 	/**
-	 * Constructor - creating a new position
+	 * Constructor - creating a new position.
 	 *
 	 * @param x
 	 * 			the x-coordinate of the position

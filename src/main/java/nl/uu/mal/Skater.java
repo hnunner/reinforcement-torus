@@ -1,6 +1,5 @@
 package nl.uu.mal;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -20,43 +19,16 @@ public class Skater {
 	/**
 	 * Constructor - creates a new skater.
 	 *
-	 * @param name
-	 * 			the name of the skater
 	 * @param availableActions
 	 * 			the list of available actions for the skater
 	 * @param skatingRink
 	 * 			the skating rink the player is located in
 	 */
-	public Skater(String name, SkatingRink skatingRink, List<Skater> otherSkaters) {
+	public Skater(SkatingRink skatingRink, List<Skater> otherSkaters) {
 		this.simRound = 0;
 		this.skatingRink = skatingRink;
 		this.position = initPosition(skatingRink.getWidth(), skatingRink.getHeight(), otherSkaters);
-		this.availableActions = initAvailableActions();
-	}
-
-	/**
-	 * Initializes the list of available actions.
-	 *
-	 * @return the available actions
-	 */
-	public List<Action> initAvailableActions() {
-		// possibly read from args
-		int baseAngle = Properties.BASE_ANGLE;
-
-		// check [360 mod (base_angle)] = 0
-		if ((360 % baseAngle) != 0) {
-			throw new RuntimeException("360° is not divisible by chosen base angle (" + Properties.BASE_ANGLE
-					+ ") without a remainder");
-		}
-
-		// step through the available angles and initialize actions
-		List<Action> availableActions = new ArrayList<Action>();
-		int currentAngle = 0;
-		while (currentAngle < 360) {
-			availableActions.add(new Action(currentAngle, Properties.STD_DISTANCE));
-			currentAngle += baseAngle;
-		}
-		return availableActions;
+		this.availableActions = Action.createAvailableActions();
 	}
 
 	/**
@@ -108,7 +80,7 @@ public class Skater {
 
 			// give low reward in case action lead to collision
 			if (!foundNextPosition) {
-				nextAction.setCumulatedPayoff(nextAction.getCumulatedPayoff() + Properties.LOW_REWARD);
+				nextAction.giveLowReward();;
 			}
 		}
 
@@ -122,11 +94,11 @@ public class Skater {
 		this.position = nextPosition;
 
 		// set new payoffs
-		nextAction.setCumulatedPayoff(nextAction.getCumulatedPayoff() + Properties.HIGH_REWARD);
+		nextAction.giveHighReward();
 		actionsIt = orderedActions.iterator();
 		while (actionsIt.hasNext()) {
 			Action action = actionsIt.next();
-			action.setMeanPayoff(Double.valueOf(action.getCumulatedPayoff()) / Double.valueOf(this.simRound));
+			action.updateMeanPayoff(this.simRound);
 		}
 	}
 
