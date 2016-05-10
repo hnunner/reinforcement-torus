@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 public class Skater {
 
 	// tool for logging purposes
+	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(Skater.class.getName());
 
 	// parameters
@@ -72,76 +73,58 @@ public class Skater {
 	 * {@link SkatingRink} the skater is located in.
 	 */
 	public void move() {
-		// requirements/initializations
 		this.simRound++;
-		Action prospectiveAction = null;
+
+		// requirements/initializations
+		Action prospectiveAction = chooseAction(this.availableActions);
+		int prospectiveAngle = prospectiveAction.getAngle();
+		int prospectiveDistance = prospectiveAction.getDistance();
+
+		// determine prospective non-collisional position along the wole way of movement, based on
+		// current position, the prospective angle, the prospective distance and the skating rink
 		Position prospectivePosition = null;
-		boolean foundNextPosition = false;
+		boolean isColliding = false;
 		List<Skater> otherSkaters = this.skatingRink.getOtherSkaters(this);
-		// order actions, so that the list is either in order of payoffs (exploitation) or in random order (exploration)
-		List<Action> orderedActions = orderActions(this.availableActions, this.simRound);
 
-		// iterate over ordered list of actions
-		Iterator<Action> actionsIt = orderedActions.iterator();
-		while (actionsIt.hasNext() && !foundNextPosition) {
-			prospectiveAction = actionsIt.next();
-			int prospectiveAngle = prospectiveAction.getAngle();
-			int prospectiveDistance = prospectiveAction.getDistance();
-
-			// determine prospective non-collisional position along the wole way of movement, based on
-			// current position, the prospective angle, the prospective distance and the skating rink
-			double stepWidth = Properties.DISTANCE_INCREMENT;
-			boolean isColliding = false;
-			while (stepWidth <= prospectiveDistance && !isColliding) {
-				prospectivePosition = skatingRink.getNewPosition(position, prospectiveAngle, stepWidth);
-				isColliding = isColliding(prospectivePosition, otherSkaters);
-				stepWidth += Properties.DISTANCE_INCREMENT;
-			}
-			foundNextPosition = !isColliding;
-
-			// give low reward in case action lead to collision
-			if (!foundNextPosition) {
-				prospectiveAction.giveLowReward();;
-			}
+		double stepWidth = Properties.DISTANCE_INCREMENT;
+		while (stepWidth <= prospectiveDistance && !isColliding) {
+			prospectivePosition = skatingRink.getNewPosition(position, prospectiveAngle, stepWidth);
+			isColliding = isColliding(prospectivePosition, otherSkaters);
+			stepWidth += Properties.DISTANCE_INCREMENT;
 		}
 
-		// skip turn, if unable to determine next position
-		if (!foundNextPosition || prospectiveAction == null || prospectivePosition == null) {
-			LOG.info("Could not find an appropriate next position. Skipping current turn.");
-			return;
+		// in case of collision: give low reward
+		if (isColliding) {
+			prospectiveAction.giveLowReward();
+		}
+		// in case of no collision: update position and give high reward
+		else {
+			this.position = prospectivePosition;
+			prospectiveAction.giveHighReward();
 		}
 
-		// set new position
-		this.position = prospectivePosition;
-
-		// set new payoffs
-		prospectiveAction.giveHighReward();
-		actionsIt = orderedActions.iterator();
-		while (actionsIt.hasNext()) {
-			Action action = actionsIt.next();
-			action.updateMeanPayoff(this.simRound);
-		}
+		updateMeanPayoffs();
 	}
 
 	/**
-	 * Orders a list of actions strategically for a defined ratio of exploration and exploitation.
+	 * Chooses an action based on a list of available actions for a pre-defined ratio of exploration and exploitation.
 	 *
-	 * @return the ordered list of actions
+	 * @return the chosen action
 	 */
-	public List<Action> orderActions(List<Action> actions, int simRound) {
+	public Action chooseAction(List<Action> actions) {
 		Random rand = new Random();
 
-		// in the beginning or in 1-epsilon percent of the cases: play a random action (explore)
-		if (simRound <= 1 || rand.nextDouble() > Properties.EPSILON_GREEDY) {
+		// in the beginning or in epsilon % of the cases: play a random action (explore)
+		if (simRound <= 1 || rand.nextDouble() <= Properties.EPSILON_GREEDY) {
 			Collections.shuffle(actions);
 		}
 
-		// in epsilon percent of the case choose action ordered by payoffs (exploit)
+		// in 1-epsilon % of the case choose action with highest payoff (exploit)
 		else {
 			Collections.sort(actions);
 		}
 
-		return actions;
+		return actions.get(0);
 	}
 
 	/**
@@ -167,6 +150,17 @@ public class Skater {
 					< Properties.COLLISION_RADIUS;
 		}
 		return collision;
+	}
+
+	/**
+	 * Updates the mean payoffs for all actions.
+	 */
+	private void updateMeanPayoffs() {
+		Iterator<Action> actionsIt = this.availableActions.iterator();
+		while (actionsIt.hasNext()) {
+			Action action = actionsIt.next();
+			action.updateMeanPayoff(this.simRound);
+		}
 	}
 
 	/**
