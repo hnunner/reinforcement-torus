@@ -5,20 +5,33 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.jfree.data.xy.XYSeries;
 
+
+/**
+ * Class representing a skating rink in which {@link Skater} can move around. The skating rink defines the shape and dimensions
+ * of the surface. In this case it represents a torus that is created from a rectangular surface (for more details, see:
+ * https://commons.wikimedia.org/wiki/File:Torus_from_rectangle.gif). For a more generic approach this class can be easily
+ * transformed into an abstract class with implementations representing different shapes. In this case only the function
+ * "getNewPosition" must be implemented according to the various shapes. This has been left out, due to simplicity, readability
+ * and the fact that the assignment focuses only on this simplified version of a torus.
+ *
+ * @author h.nunner
+ */
 public class SkatingRink {
 
+	// tool for logging purposes
 	public static final Logger LOG = Logger.getLogger(SkatingRink.class.getName());
 
-	private List<Skater> skaters;
+	// parameters
 	private int width;
 	private int height;
-	private Map<Integer, XYSeries> plots;
-
+	private List<Skater> skaters;
+	private Map<Integer, XYSeries> payoffsPerAngle;			// key: different angles of the actions,
+															// value: mean payoffs for all skaters over time
 
 	/**
 	 * Eagerly initialized singleton.
@@ -39,18 +52,14 @@ public class SkatingRink {
 
 
 	/**
-	 * Initialization of the plots. These are based on the different angles of the actions.
-	 *
-	 * @param actions
-	 * 			the actions the plots are based on
+	 * Initialization of the plots, based on the different angles of actions.
 	 */
 	private void initPlots() {
-		this.plots = new HashMap<Integer, XYSeries>();
-
+		this.payoffsPerAngle = new HashMap<Integer, XYSeries>();
 		Iterator<Action> actionsIt = Action.createAvailableActions().iterator();
 		while (actionsIt.hasNext()) {
-			Action action = actionsIt.next();
-			this.plots.put(action.getAngle(), new XYSeries(String.valueOf(action.getAngle())));
+			int angle = actionsIt.next().getAngle();
+			this.payoffsPerAngle.put(angle, new XYSeries(String.valueOf(angle + "°")));
 		}
 	}
 
@@ -62,107 +71,109 @@ public class SkatingRink {
 	}
 
 	/**
-	 * Simulates movement of skaters for a definable number of rounds.
+	 * Simulates movement of skaters for an arbitrary number of rounds.
 	 *
 	 * @param rounds
-	 * 			number of round to be simulated
+	 * 			number of rounds to be simulated
 	 */
 	public void letThemSkate(int rounds) {
-		for (int i = 0; i < rounds; i++) {
+		// iteration over number of rounds
+		for (int simRound = 0; simRound < rounds; simRound++) {
+			// asynchronous simulation of movement for each skater
 			Iterator<Skater> skatersIt = skaters.iterator();
-
-
-/*
-			StringBuilder sb = new StringBuilder();
-			sb.append("\n\nRound " + i + ": \n");
-			int j = 1;
-
-*/
 			while (skatersIt.hasNext()) {
 				Skater skater = skatersIt.next();
 				skater.move();
+			}
+			updateMeanPayoffs(simRound);
+		}
+	}
+	/**
+	 * Updates the mean payoffs for all skaters and all angles for the given simulation round.
+	 *
+	 * @param simRound
+	 * 			the simulation round
+	 */
+	private void updateMeanPayoffs(int simRound) {
+		Iterator<Skater> skatersIt;
+		Iterator<Entry<Integer, XYSeries>> payoffsIt = payoffsPerAngle.entrySet().iterator();
 
+		// iterate through payoffs per angle
+		while (payoffsIt.hasNext()) {
+			Entry<Integer, XYSeries> payoff = payoffsIt.next();
 
-/*
-				sb.append("\tSkater" + j++ + ": \n");
-				Iterator<Action> actionIt = skater.getAvailableActions().iterator();
-				while (actionIt.hasNext()) {
-					Action action = actionIt.next();
-					sb.append("\t\tAngle: " + action.getAngle() + "\tCumulated Payoff: " + action.getCumulatedPayoff()
-							+ "\tMean Payoff: " + action.getMeanPayoff() + "\n");
-				}
-*/
+			double meanPayoffPerAngle = 0;
 
+			// iterate through all skaters and sum up mean payoffs
+			skatersIt = skaters.iterator();
+			while (skatersIt.hasNext()) {
+				Skater skater = skatersIt.next();
+				meanPayoffPerAngle += skater.getMeanPayoffForAngle(payoff.getKey());
 			}
 
-//			LOG.info(sb.toString());
-
-
-
-
-			// recalculating mean payoff for every action
-			Set<Integer> angles = plots.keySet();
-			Iterator<Integer> anglesIt = angles.iterator();
-			while (anglesIt.hasNext()) {
-				Integer angle = anglesIt.next();
-				XYSeries xySeries = plots.get(angle);
-
-				skatersIt = skaters.iterator();
-				double meanPayoffPerAngle = 0;
-				while (skatersIt.hasNext()) {
-					Skater skater = skatersIt.next();
-					meanPayoffPerAngle += skater.getMeanPayoffForAngle(angle);
-				}
-				meanPayoffPerAngle = Double.valueOf(meanPayoffPerAngle) / Double.valueOf(Properties.PLAYER_COUNT);
-				xySeries.add(i, meanPayoffPerAngle);
- 			}
-
-
+			// divide summed up mean payoffs by number of skaters
+			meanPayoffPerAngle = Double.valueOf(meanPayoffPerAngle) / Double.valueOf(Properties.PLAYER_COUNT);
+			// add mean payoff over all skaters and specific angle for the current simulation round
+			payoff.getValue().add(simRound, meanPayoffPerAngle);
 		}
 	}
 
 
-	public Position getNewPosition(Position position, Action action) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("\taction: " + action.getAngle() + ", " + action.getDistance() + "\n");
+	/**
+	 * Calculates new position within the skating rink, based on a current position and an action. The calculation is
+	 * based on the shape and layout of the skating rink. In this case it is a simple torus constructed out of a
+	 * rectangular, two-dimensional shape.
+	 *
+	 * @param currentPosition
+	 * 			the skater's current position
+	 * @param action
+	 * 			the intended action
+	 * @return the new position of the skater
+	 */
+	public Position getNewPosition(Position currentPosition, Action action) {
+
 		// new x-coordinate
-		double newX = (Math.cos(Math.toRadians(action.getAngle())) * action.getDistance()) + position.getX();
+		double newX = (Math.cos(Math.toRadians(action.getAngle())) * action.getDistance()) + currentPosition.getX();
+		// wrap around, if skater skates out of bounds
 		if (newX >= this.width) {
 			newX = newX - this.width;
 		}
 		if (newX < 0) {
 			newX = newX + this.width;
 		}
-		sb.append("\t\told x: " + position.getX() + " --> new x: " + newX);
 
 		// new y-coordinate
-		double newY = Math.sin(Math.toRadians(action.getAngle())) * action.getDistance() + position.getY();
+		double newY = Math.sin(Math.toRadians(action.getAngle())) * action.getDistance() + currentPosition.getY();
+		// wrap around, if skater skates out of bounds
 		if (newY >= this.height) {
 			newY = newY - this.height;
 		}
 		if (newY < 0) {
 			newY = newY + this.height;
 		}
-		sb.append("\t\told y: " + position.getY() + " --> new y: " + newY);
-//		LOG.info(sb.toString());
 
 		return new Position(newX, newY);
 	}
 
+	/**
+	 * Gets all skaters except the one handed in as parameter.
+	 *
+	 * @param skater
+	 * 			skater being excluded
+	 * @return list of all skaters, excluding the skater handed in as parameter
+	 */
 	public List<Skater> getOtherSkaters(Skater skater) {
 		List<Skater> otherSkaters = new ArrayList<Skater>(skaters);
 		otherSkaters.remove(skater);
 		return otherSkaters;
 	}
 
-
 	/**
-	 * @return the skaters
+	 * Adds a skater to the list of all skaters.
+	 *
+	 * @param skater
+	 * 			the skater to add
 	 */
-	public List<Skater> getSkaters() {
-		return skaters;
-	}
-
 	public void addSkater(Skater skater) {
 		this.skaters.add(skater);
 	}
@@ -182,10 +193,10 @@ public class SkatingRink {
 	}
 
 	/**
-	 * @return the plots
+	 * @return the payoffsPerAngle
 	 */
-	public Map<Integer, XYSeries> getPlots() {
-		return plots;
+	public Map<Integer, XYSeries> getPayoffsPerAngle() {
+		return payoffsPerAngle;
 	}
 
 }

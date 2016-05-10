@@ -30,8 +30,8 @@ public class Simulation {
 		// plot to graph
 		final String title = "Mean rewards per angle";
 		final String xLabel = "simulation round";
-		final String yLabel = "mean reward over all (" + skatingRink.getSkaters().size() + ") skaters";
-		final LineChart chart = new LineChart(title, xLabel, yLabel, skatingRink.getPlots().values());
+		final String yLabel = "mean reward over all (" + Properties.PLAYER_COUNT + ") skaters";
+		final LineChart chart = new LineChart(title, xLabel, yLabel, skatingRink.getPayoffsPerAngle().values());
         chart.pack();
         RefineryUtilities.centerFrameOnScreen(chart);
         chart.setVisible(true);

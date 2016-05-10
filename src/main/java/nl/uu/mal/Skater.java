@@ -7,14 +7,18 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 /**
- * Class representing a skater moving around the skating rink. It contains information about the position and the logic for
- * triggering movements on the {@link SkatingRink} based on the available actions and the implemented learning algorithm.
+ * Class representing a skater moving around in a {@link SkatingRink}. It contains information about the position and the
+ * logic for triggering movements on the {@link SkatingRink} based on the available actions and the implemented learning
+ * algorithm. The learning algorithm is implemented within the class and is based on epsilon-greedy reinforcement learning.
+ * For a more generic implementation, this could be easily extracted either in a subclass of the Skater class, or better as
+ * a generic behavior implemented as strategy pattern. For simplicity, readability and because generic behavior is not
+ * required in the assignment a generalization of the approach has been left out.
  *
  * @author h.nunner
  */
 public class Skater {
 
-	// simple tool for logging purposes
+	// tool for logging purposes
 	private static final Logger LOG = Logger.getLogger(Skater.class.getName());
 
 	// parameters
