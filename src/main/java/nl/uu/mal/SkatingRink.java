@@ -29,6 +29,7 @@ public class SkatingRink {
 	private SkatingRink(int width, int height) {
 		this.width = width;
 		this.height = height;
+		this.skaters = new ArrayList<Skater>();
 	}
 	// getter
 	public static SkatingRink getInstance() {
@@ -42,10 +43,10 @@ public class SkatingRink {
 	 * @param actions
 	 * 			the actions the plots are based on
 	 */
-	public void initPlots(List<Action> actions) {
+	public void initPlots() {
 		this.plots = new HashMap<Integer, XYSeries>();
 
-		Iterator<Action> actionsIt = actions.iterator();
+		Iterator<Action> actionsIt = this.skaters.get(0).getAvailableActions().iterator();
 		while (actionsIt.hasNext()) {
 			Action action = actionsIt.next();
 			this.plots.put(action.getAngle(), new XYSeries(String.valueOf(action.getAngle())));
@@ -166,6 +167,10 @@ public class SkatingRink {
 	 */
 	public void setSkaters(List<Skater> skaters) {
 		this.skaters = skaters;
+	}
+
+	public void addSkater(Skater skater) {
+		this.skaters.add(skater);
 	}
 
 	/**

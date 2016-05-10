@@ -24,10 +24,10 @@ public class Skater {
 	 * @param skatingRink
 	 * 			the skating rink the player is located in
 	 */
-	public Skater(SkatingRink skatingRink, List<Skater> otherSkaters) {
+	public Skater(SkatingRink skatingRink) {
 		this.simRound = 0;
 		this.skatingRink = skatingRink;
-		this.position = initPosition(skatingRink.getWidth(), skatingRink.getHeight(), otherSkaters);
+		this.position = initPosition(skatingRink);
 		this.availableActions = Action.createAvailableActions();
 	}
 
@@ -42,7 +42,11 @@ public class Skater {
 	 * 			other skaters for collision checks
 	 * @return the initila position
 	 */
-	private Position initPosition(int width, int height, List<Skater> otherSkaters) {
+	private Position initPosition(SkatingRink skatingRink) {
+		int width = skatingRink.getWidth();
+		int height = skatingRink.getHeight();
+		List<Skater> otherSkaters = skatingRink.getOtherSkaters(this);
+
 		// try a random position first
 		Random rand = new Random();
 		Position initialPosition = new Position(Double.valueOf(rand.nextInt(width)), Double.valueOf(rand.nextInt(height)));
