@@ -35,6 +35,9 @@ public class Simulation {
         chart.pack();
         RefineryUtilities.centerFrameOnScreen(chart);
         chart.setVisible(true);
+
+        // write to csv
+        CsvWriter.generateCsvFile(skatingRink.getPayoffsPerSkater().toString());
 	}
 
 }

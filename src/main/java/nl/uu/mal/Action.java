@@ -47,13 +47,12 @@ public class Action implements Comparable<Action> {
 	 * @return the list of available actions
 	 */
 	public static List<Action> createAvailableActions() {
-		int baseAngle = 360 / Properties.ACTION_COUNT;
 		// step through the available angles and initialize actions
 		List<Action> availableActions = new ArrayList<Action>();
 		int currentAngle = 0;
 		while (currentAngle < 360) {
 			availableActions.add(new Action(currentAngle, Properties.STD_DISTANCE));
-			currentAngle += baseAngle;
+			currentAngle += Properties.BASE_ANGLE;
 		}
 		return availableActions;
 	}

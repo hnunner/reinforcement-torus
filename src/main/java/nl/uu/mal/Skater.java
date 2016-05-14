@@ -23,7 +23,6 @@ public class Skater {
 	private static final Logger LOG = Logger.getLogger(Skater.class.getName());
 
 	// parameters
-	private int simRound;
 	private SkatingRink skatingRink;
 	private Position position;
 	private List<Action> availableActions;
@@ -36,7 +35,6 @@ public class Skater {
 	 * 			the skating rink the player is located in
 	 */
 	public Skater(SkatingRink skatingRink) {
-		this.simRound = 0;
 		this.skatingRink = skatingRink;
 		initPosition(skatingRink);
 		this.availableActions = Action.createAvailableActions();
@@ -72,11 +70,9 @@ public class Skater {
 	 * by the implemented learning algorithm, the actual position of the skater and the implementation of the
 	 * {@link SkatingRink} the skater is located in.
 	 */
-	public void move() {
-		this.simRound++;
-
+	public void move(int simRound) {
 		// requirements/initializations
-		Action prospectiveAction = chooseAction(this.availableActions);
+		Action prospectiveAction = chooseAction(this.availableActions, simRound);
 		int prospectiveAngle = prospectiveAction.getAngle();
 		int prospectiveDistance = prospectiveAction.getDistance();
 
@@ -103,15 +99,19 @@ public class Skater {
 			prospectiveAction.giveHighReward();
 		}
 
-		updateMeanPayoffs();
+		updateMeanPayoffs(simRound);
 	}
 
 	/**
 	 * Chooses an action based on a list of available actions for a pre-defined ratio of exploration and exploitation.
 	 *
+	 * @param actions
+	 * 			list of available actions
+	 * @param simRound
+	 * 			the current simulation round
 	 * @return the chosen action
 	 */
-	public Action chooseAction(List<Action> actions) {
+	private Action chooseAction(List<Action> actions, int simRound) {
 		Random rand = new Random();
 
 		// in the beginning or in epsilon % of the cases: play a random action (explore)
@@ -154,12 +154,15 @@ public class Skater {
 
 	/**
 	 * Updates the mean payoffs for all actions.
+	 *
+	 * @param simRound
+	 * 			the current simulation round
 	 */
-	private void updateMeanPayoffs() {
+	private void updateMeanPayoffs(int simRound) {
 		Iterator<Action> actionsIt = this.availableActions.iterator();
 		while (actionsIt.hasNext()) {
 			Action action = actionsIt.next();
-			action.updateMeanPayoff(this.simRound);
+			action.updateMeanPayoff(simRound);
 		}
 	}
 
@@ -197,6 +200,13 @@ public class Skater {
 			}
 		}
 		return 0;
+	}
+
+	/**
+	 * @return the availableActions
+	 */
+	public List<Action> getAvailableActions() {
+		return availableActions;
 	}
 
 	/**

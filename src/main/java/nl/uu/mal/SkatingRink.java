@@ -1,6 +1,8 @@
 package nl.uu.mal;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,8 +32,13 @@ public class SkatingRink {
 	private int width;
 	private int height;
 	private List<Skater> skaters;
+
+	// logging of payoffs
+	// TODO: extract to external payoff logger class
 	private Map<Integer, XYSeries> payoffsPerAngle;			// key: different angles of the actions,
 															// value: mean payoffs for all skaters over time
+	private StringBuilder payoffsPerSkater;					// quick and easy way to generate csv-file for payoffs
+															// per skater over time
 
 	/**
 	 * Eagerly initialized singleton.
@@ -43,7 +50,7 @@ public class SkatingRink {
 		this.width = width;
 		this.height = height;
 		this.skaters = new ArrayList<Skater>();
-		this.initPlots();
+		this.initPayoffStorages();
 	}
 	// getter
 	public static SkatingRink getInstance() {
@@ -52,15 +59,16 @@ public class SkatingRink {
 
 
 	/**
-	 * Initialization of the plots, based on the different angles of actions.
+	 * Initialization of the payoff storages, based on the different angles of actions.
 	 */
-	private void initPlots() {
+	private void initPayoffStorages() {
 		this.payoffsPerAngle = new HashMap<Integer, XYSeries>();
 		Iterator<Action> actionsIt = Action.createAvailableActions().iterator();
 		while (actionsIt.hasNext()) {
 			int angle = actionsIt.next().getAngle();
 			this.payoffsPerAngle.put(angle, new XYSeries(String.valueOf(angle + "°")));
 		}
+		payoffsPerSkater = new StringBuilder();
 	}
 
 	/**
@@ -78,16 +86,58 @@ public class SkatingRink {
 	 */
 	public void letThemSkate(int rounds) {
 		// iteration over number of rounds
-		for (int simRound = 0; simRound < rounds; simRound++) {
+		for (int simRound = 1; simRound <= rounds; simRound++) {
 			// asynchronous simulation of movement for each skater
 			Iterator<Skater> skatersIt = skaters.iterator();
+			int skaterIndex = 0;
 			while (skatersIt.hasNext()) {
 				Skater skater = skatersIt.next();
-				skater.move();
+				skater.move(simRound);
+				updatePayoffsPerSkater(simRound, skaterIndex++, skater);
 			}
 			updateMeanPayoffs(simRound);
 		}
 	}
+	/**
+	 * Appending payoffs per skater.
+	 *
+	 * @param simRound
+	 * 			the simulation round
+	 * @param skaterIndex
+	 * 			the skater index
+	 * @param skater
+	 * 			the skater, including the payoffs per action
+	 */
+	private void updatePayoffsPerSkater(int simRound, int skaterIndex, Skater skater) {
+		// append simulation round and skater
+		payoffsPerSkater.append(simRound).append(",").append(skaterIndex).append(",");
+
+		// sort by angle
+		// TODO: extract to Action and generalize sorting with different {@link Comparator}s
+		List<Action> availableActions = skater.getAvailableActions();
+		Collections.sort(availableActions, new Comparator<Action>() {
+			public int compare(Action o1, Action o2) {
+				if (o1.getAngle() <= o2.getAngle()) {
+					return -1;
+				} else {
+					return 1;
+				}
+			}
+		});
+
+		// append payoffs for different angles
+		Iterator<Action> actionsIt = availableActions.iterator();
+		while (actionsIt.hasNext()) {
+			Action action = actionsIt.next();
+			payoffsPerSkater.append(action.getCumulatedPayoff());
+			if (actionsIt.hasNext()) {
+				payoffsPerSkater.append(",");
+			} else {
+				payoffsPerSkater.append("\n");
+			}
+		}
+	}
+
 	/**
 	 * Updates the mean payoffs for all skaters and all angles for the given simulation round.
 	 *
@@ -172,6 +222,13 @@ public class SkatingRink {
 	}
 
 	/**
+	 * @return the skaters
+	 */
+	public List<Skater> getSkaters() {
+		return skaters;
+	}
+
+	/**
 	 * Adds a skater to the list of all skaters.
 	 *
 	 * @param skater
@@ -200,6 +257,13 @@ public class SkatingRink {
 	 */
 	public Map<Integer, XYSeries> getPayoffsPerAngle() {
 		return payoffsPerAngle;
+	}
+
+	/**
+	 * @return the payoffsPerSkater
+	 */
+	public StringBuilder getPayoffsPerSkater() {
+		return payoffsPerSkater;
 	}
 
 }
