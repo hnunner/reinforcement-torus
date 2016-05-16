@@ -7,7 +7,6 @@ import java.util.Iterator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
@@ -83,7 +82,7 @@ public class LineChart extends ApplicationFrame {
         chart.getXYPlot().setDomainGridlinePaint(Color.gray);
         chart.getXYPlot().setRangeGridlinePaint(Color.gray);
         chart.getXYPlot().setRenderer(new XYLineAndShapeRenderer(true, false));
-        chart.getXYPlot().getRangeAxis().setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+//        chart.getXYPlot().getRangeAxis().setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
         return chart;
     }

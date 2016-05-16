@@ -17,13 +17,13 @@ public final class Properties {
 	public static final double EPSILON_GREEDY = 0.1;							// ε
 
 	// gameplay/layout
-	public static final int DEFAULT_ROUNDS = 100;
-	public static final int PLAYER_COUNT = 5;									// N
-	public static final int TORUS_WIDTH = 15;									// w
-	public static final int TORUS_HEIGHT = 15;									// h
-	public static final double COLLISION_RADIUS = 3;							// r
+	public static final int DEFAULT_ROUNDS = 1000;
+	public static final int PLAYER_COUNT = 25;									// N
+	public static final int TORUS_WIDTH = 5;									// w
+	public static final int TORUS_HEIGHT = 5;									// h
+	public static final double COLLISION_RADIUS = 0.8;							// r
 
 	// rewards
 	public static final int HIGH_REWARD = 10;									// R1
-	public static final int LOW_REWARD = 1;										// R2
+	public static final int LOW_REWARD = 0;										// R2
 }

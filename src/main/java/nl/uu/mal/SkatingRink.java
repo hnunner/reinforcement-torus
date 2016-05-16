@@ -95,7 +95,7 @@ public class SkatingRink {
 				skater.move(simRound);
 				updatePayoffsPerSkater(simRound, skaterIndex++, skater);
 			}
-			updateMeanPayoffs(simRound);
+			updateMeanPayoffsPerAngle(simRound);
 		}
 	}
 	/**
@@ -144,7 +144,7 @@ public class SkatingRink {
 	 * @param simRound
 	 * 			the simulation round
 	 */
-	private void updateMeanPayoffs(int simRound) {
+	private void updateMeanPayoffsPerAngle(int simRound) {
 		Iterator<Skater> skatersIt;
 		Iterator<Entry<Integer, XYSeries>> payoffsIt = payoffsPerAngle.entrySet().iterator();
 
